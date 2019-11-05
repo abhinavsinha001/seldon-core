@@ -32,12 +32,12 @@ def nlp_pipeline(
       name='my-pvc',
       resource_name="my-pvc",
       modes=["ReadWriteMany"],
-      size="1Gi"
+      size="2Gi"
     )
 
     download_step = dsl.ContainerOp(
         name='data_downloader',
-        image='data_downloader:0.1',
+        image='abhinavsinha001/data_downloader:0.1',
         command="python",
         arguments=[
             "/microservice/pipeline_step.py",
@@ -50,10 +50,10 @@ def nlp_pipeline(
         ],
         pvolumes={"/mnt": vop.volume}
     )
-
+    
     clean_step = dsl.ContainerOp(
         name='clean_text',
-        image='clean_text_transformer:0.1',
+        image='abhinavsinha001/clean_text_transformer:0.1',
         command="python",
         arguments=[
             "/microservice/pipeline_step.py",
@@ -63,9 +63,19 @@ def nlp_pipeline(
         pvolumes={"/mnt": download_step.pvolume}
     )
 
+    sleep_step = dsl.ContainerOp(
+        name='sleep',
+        image='busybox',
+        command="sleep",
+        arguments=[
+            "50",
+        ],
+    )
+    sleep_step.after(clean_step)
+
     tokenize_step = dsl.ContainerOp(
         name='tokenize',
-        image='spacy_tokenizer:0.1',
+        image='abhinavsinha001/spacy_tokenizer:0.1',
         command="python",
         arguments=[
             "/microservice/pipeline_step.py",
@@ -74,10 +84,10 @@ def nlp_pipeline(
         ],
         pvolumes={"/mnt": clean_step.pvolume}
     )
-
+    tokenize_step.after(sleep_step)
     vectorize_step = dsl.ContainerOp(
         name='vectorize',
-        image='tfidf_vectorizer:0.1',
+        image='abhinavsinha001/tfidf_vectorizer:0.1',
         command="python",
         arguments=[
             "/microservice/pipeline_step.py",
@@ -93,7 +103,7 @@ def nlp_pipeline(
 
     predict_step = dsl.ContainerOp(
         name='predictor',
-        image='lr_text_classifier:0.1',
+        image='abhinavsinha001/lr_text_classifier:0.1',
         command="python",
         arguments=[
             "/microservice/pipeline_step.py",
@@ -108,10 +118,10 @@ def nlp_pipeline(
     )
 
     try:
-        seldon_config = yaml.load(open("../deploy_pipeline/seldon_production_pipeline.yaml"))
+        seldon_config = yaml.load(open("../deploy_pipeline/seldon_production_pipeline.yaml"),Loader=yaml.FullLoader)
     except:
         # If this file is run from the project core directory 
-        seldon_config = yaml.load(open("deploy_pipeline/seldon_production_pipeline.yaml"))
+        seldon_config = yaml.load(open("deploy_pipeline/seldon_production_pipeline.yaml"),Loader=yaml.FullLoader)
 
     deploy_step = dsl.ResourceOp(
         name="seldondeploy",

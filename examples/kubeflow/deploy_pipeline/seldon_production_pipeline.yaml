@@ -17,22 +17,22 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: clean_text_transformer:0.1
+        - image: abhinavsinha001/clean_text_transformer:0.1
           imagePullPolicy: IfNotPresent
           name: cleantext
           resources:
             requests:
               memory: 1Mi
-        - image: spacy_tokenizer:0.1
+        - image: abhinavsinha001/spacy_tokenizer:0.1
           imagePullPolicy: IfNotPresent
           name: spacytokenizer
-        - image: tfidf_vectorizer:0.1
+        - image: abhinavsinha001/tfidf_vectorizer:0.1
           imagePullPolicy: IfNotPresent
           name: tfidfvectorizer
           volumeMounts:
           - name: mypvc
             mountPath: /mnt
-        - image: lr_text_classifier:0.1
+        - image: abhinavsinha001/lr_text_classifier:0.1
           imagePullPolicy: IfNotPresent
           name: lrclassifier
           volumeMounts:
