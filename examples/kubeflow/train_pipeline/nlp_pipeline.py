@@ -62,7 +62,7 @@ def nlp_pipeline(
         ],
         pvolumes={"/mnt": download_step.pvolume}
     )
-
+    #Added to address rook PVC contention 
     sleep_step = dsl.ContainerOp(
         name='sleep',
         image='busybox',
@@ -84,6 +84,7 @@ def nlp_pipeline(
         ],
         pvolumes={"/mnt": clean_step.pvolume}
     )
+    #Added to address rook PVC contention 
     tokenize_step.after(sleep_step)
     vectorize_step = dsl.ContainerOp(
         name='vectorize',
